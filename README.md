@@ -44,7 +44,7 @@ cd backend
 
 Update your database configuration:
 Properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/taskdb
+<!-- spring.datasource.url=jdbc:postgresql:
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 
