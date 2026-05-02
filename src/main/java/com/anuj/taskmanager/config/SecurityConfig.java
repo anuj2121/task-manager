@@ -18,6 +18,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import org.springframework.http.HttpMethod;
+
 import java.util.List;
 
 @Configuration
@@ -33,7 +35,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
 
-            // 🔥 ENABLE CORS (IMPORTANT)
+            // 🔥 ENABLE CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
             .sessionManagement(session -> session
@@ -41,14 +43,31 @@ public class SecurityConfig {
             )
 
             .authorizeHttpRequests(auth -> auth
+
+                // 🔥 allow preflight requests (important for frontend)
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // 🔥 allow root & static (fixes 403 on "/")
+                .requestMatchers(
+                    "/",
+                    "/index.html",
+                    "/error",
+                    "/favicon.ico",
+                    "/css/**",
+                    "/js/**"
+                ).permitAll()
+
+                // 🔥 public APIs
                 .requestMatchers(
                     "/api/users/register",
                     "/api/users/login",
                     "/api/users/test"
                 ).permitAll()
 
+                // 🔒 protected APIs
                 .requestMatchers("/api/tasks/**").authenticated()
 
+                // 🔒 everything else (keep secure)
                 .anyRequest().authenticated()
             )
 
@@ -60,17 +79,14 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 🔥 CORS CONFIG (THIS FIXES NETWORK ERROR)
+    // 🔥 CORS CONFIG
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
-
-        // allow frontend origin
-        config.setAllowedOriginPatterns(List.of("*")); // for dev (use specific in prod)
-
+        config.setAllowedOriginPatterns(List.of("*")); // use specific origin in production
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
