@@ -43,10 +43,11 @@ cd backend
 ./mvnw spring-boot:run
 
 Update your database configuration:
-
+Properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/taskdb
 spring.datasource.username=your_username
 spring.datasource.password=your_password
+
 🌐 Frontend Setup
 Open login.html in browser
 OR
