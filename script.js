@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = "https://task-manager-production-cd74.up.railway.app";
 console.log("JS LOADED");
 
 let PROJECT_ID = 1;
@@ -35,32 +35,47 @@ function init() {
 async function login() {
     console.log("LOGIN CLICKED");
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    try {
+        const res = await fetch(BASE_URL + "/api/users/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: "anuj@gmail.com",
+                password: "123456"
+            })
+        });
 
-    const res = await fetch(`${BASE_URL}/api/users/login`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-    });
+        if (!res.ok) {
+            throw new Error("Login failed: " + res.status);
+        }
 
-    const token = await res.text();
+        // ✅ IMPORTANT: use json()
+        const data = await res.json();
 
-    // 🔥 Decode JWT
-    const payload = JSON.parse(atob(token.split('.')[1]));
+        const token = data.token;
+        console.log("TOKEN:", token);
 
-    const role = payload.role;
-    const userEmail = payload.sub; // subject = email
+        // 🔥 Decode JWT safely
+        const payload = JSON.parse(atob(token.split('.')[1]));
 
-    // 🔥 Save data
-    localStorage.setItem("token", token);
-    localStorage.setItem("role", role);
-    localStorage.setItem("email", userEmail);
+        const role = payload.role;
+        const userEmail = payload.sub;
 
-    alert("Login success ✅");
-    window.location.href = "dashboard.html";
+        // 🔥 Save
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
+        localStorage.setItem("email", userEmail);
+
+        alert("Login success ✅");
+
+        window.location.href = "dashboard.html";
+
+    } catch (error) {
+        console.error("LOGIN ERROR:", error);
+        alert("Login failed ❌");
+    }
 }
 
 // 📁 CREATE PROJECT
