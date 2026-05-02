@@ -206,7 +206,33 @@ async function register() {
         alert("Server error ❌");
     }
 }
+async function getTasks() {
 
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Please login first ❌");
+        return;
+    }
+
+    const res = await fetch(BASE_URL + "/api/tasks/project/1", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
+
+    const data = await res.json();
+    console.log("TASKS:", data);
+
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+
+    data.forEach(t => {
+        const li = document.createElement("li");
+        li.innerText = t.title + " - " + t.status;
+        list.appendChild(li);
+    });
+}
 // 📊 LOAD TASKS
 async function loadTasks() {
 
