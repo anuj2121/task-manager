@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Manager</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+    margin: 0;
+    font-family: Arial;
+
+    background: 
+        linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
+        url('bg3.jpg');
+
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+        /* 🔝 NAVBAR */
+        .navbar {
+            background: #1e293b;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            margin: 0;
+        }
+
+        .nav-actions button {
+            margin-left: 10px;
+        }
+
+        /* 📦 CONTAINER */
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* 📊 STATS */
+        .stats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .card-stat {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+
+        .total { background: #3b82f6; }
+        .todo { background: #f59e0b; }
+        .progress { background: #8b5cf6; }
+        .done { background: #10b981; }
+        .overdue { background: #ef4444; }
+
+        /* 📄 CARDS */
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            background: #3b82f6;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        /* 📋 TASKS */
+        .task {
+            background: #eef2ff;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+        }
+
+        .task button {
+            margin-top: 5px;
+            background: #10b981;
+        }
+
+        /* 🌙 DARK MODE */
+        .dark {
+            background: #111827;
+            color: white;
+        }
+
+        .dark .card {
+            background: #1f2937;
+        }
+
+        .dark .task {
+            background: #374151;
+        }
+
+        /* 📱 MOBILE */
+        @media(max-width: 600px) {
+            .stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body onload="init()">
+
+<!-- 🔝 NAVBAR -->
+<div class="navbar">
+    <h2>Task Manager</h2>
+
+     <div class="nav-right">
+        <span id="userInfo"></span>
+        <button onclick="toggleDarkMode()">🌙</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+</div>
+
+<div class="container">
+
+<!-- 📊 DASHBOARD -->
+<div class="stats">
+    <div class="card-stat total">Total<br><span id="total">0</span></div>
+    <div class="card-stat todo">TODO<br><span id="todo">0</span></div>
+    <div class="card-stat progress">Progress<br><span id="inprogress">0</span></div>
+    <div class="card-stat done">Done<br><span id="done">0</span></div>
+    <div class="card-stat overdue">Overdue<br><span id="overdue">0</span></div>
+</div>
+<div id="adminSection">
+<!-- 📁 PROJECT -->
+<div class="card">
+    <h3>Create Project</h3>
+    <input id="projectName" placeholder="Project Name">
+    <input id="projectDesc" placeholder="Description">
+    <button onclick="createProject()">Create</button>
+</div>
+
+<!-- 👥 TEAM -->
+<div class="card">
+    <h3>Add Member</h3>
+    <input id="memberId" placeholder="User ID">
+    <button onclick="addMember()">Add Member</button>
+</div>
+<!-- 📌 TASK -->
+<div class="card">
+    <h3>Create Task</h3>
+    <input id="title" placeholder="Title">
+    <input id="description" placeholder="Description">
+    <input id="assignUser" placeholder="Assign User ID">
+    <button onclick="createTask()">Create Task</button>
+</div>
+</div>
+
+<!-- 📋 TASK LIST -->
+<div class="card">
+    <h3>Tasks</h3>
+    <button onclick="loadTasks()">Refresh</button>
+    <div id="taskList"></div>
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+<script>
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+}
+</script>
+
+</body>
+</html>
