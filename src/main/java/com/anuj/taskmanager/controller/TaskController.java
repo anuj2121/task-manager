@@ -31,7 +31,7 @@ public class TaskController {
         return ResponseEntity.ok(createdTask);
     }
 
-    // 🔥 OLD API (keep it)
+    // 🔥 Get Tasks (List)
     @GetMapping("/project/{projectId}")
     public ResponseEntity<List<Task>> getTasks(@PathVariable Long projectId) {
 
@@ -39,7 +39,7 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    // 🔥 NEW PAGINATION API (added, not replacing)
+    // 🔥 Pagination API
     @GetMapping("/project/{projectId}/paged")
     public ResponseEntity<Page<Task>> getTasksPaged(
             @PathVariable Long projectId,
@@ -49,22 +49,25 @@ public class TaskController {
                 taskService.getTasksByProject(projectId, pageable)
         );
     }
+
+    // 🔥 DTO API
     @GetMapping("/project/{projectId}/dto")
-public ResponseEntity<Page<TaskResponse>> getTasksDto(
-        @PathVariable Long projectId,
-        Pageable pageable) {
+    public ResponseEntity<Page<TaskResponse>> getTasksDto(
+            @PathVariable Long projectId,
+            Pageable pageable) {
 
-    return ResponseEntity.ok(
-            taskService.getTasksDto(projectId, pageable)
-    );
-}
+        return ResponseEntity.ok(
+                taskService.getTasksDto(projectId, pageable)
+        );
+    }
 
-    // 🔥 Update Status
-    @PutMapping("/api/tasks/{id}/status")
-public Task updateStatus(
-        @PathVariable Long id,
-        @RequestParam String status) {
+    // 🔥 UPDATE STATUS (FIXED)
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Task> updateStatus(
+            @PathVariable Long id,
+            @RequestParam Status status) {
 
-    return taskService.updateStatus(id, status);
-}
+        Task updatedTask = taskService.updateStatus(id, status);
+        return ResponseEntity.ok(updatedTask);
+    }
 }
