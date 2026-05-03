@@ -217,83 +217,110 @@ async function updateStatus(taskId, status) {
 }
 
 // 📊 LOAD TASKS (MAIN FUNCTION)
+// async function loadTasks() {
+
+//     const token = getToken();
+
+//     if (!token) {
+//         alert("Please login first ❌");
+//         window.location.href = "index.html";
+//         return;
+//     }
+
+//     const res = await fetch(
+//         `${BASE_URL}/api/tasks/project/${PROJECT_ID}/paged?page=0&size=50`,
+//         {
+//             headers: {
+//                 "Authorization": "Bearer " + token
+//             }
+//         }
+//     );
+
+//     const data = await res.json();
+//     const tasks = data.content;
+
+//     let total = tasks.length;
+//     let todo = 0, inprogress = 0, done = 0, overdue = 0;
+
+//     const list = document.getElementById("taskList");
+//     list.innerHTML = "";
+
+//     const today = new Date();
+
+//     tasks.forEach(task => {
+
+//         if (task.status === "TODO") todo++;
+//         if (task.status === "IN_PROGRESS") inprogress++;
+//         if (task.status === "DONE") done++;
+
+//         const created = new Date(task.createdAt);
+//         const diff = (today - created) / (1000 * 60 * 60 * 24);
+
+//         if (diff > 2 && task.status !== "DONE") overdue++;
+
+//         // hide DONE tasks
+//         if (task.status === "DONE") return;
+
+//         const div = document.createElement("div");
+//         div.className = "task";
+
+//         div.innerHTML = `
+//             <strong>${task.title}</strong><br>
+//             Status: ${task.status}<br>
+//             <button onclick="updateStatus(${task.id}, 'IN_PROGRESS')">Start</button>
+//             <button onclick="updateStatus(${task.id}, 'DONE')">Done</button>
+//         `;
+
+//         list.appendChild(div);
+//     });
+
+//     // stats
+//     document.getElementById("total").innerText = total;
+//     document.getElementById("todo").innerText = todo;
+//     document.getElementById("inprogress").innerText = inprogress;
+//     document.getElementById("done").innerText = done;
+//     document.getElementById("overdue").innerText = overdue;
+// }
 async function loadTasks() {
 
-    const token = getToken();
+    const token = localStorage.getItem("token");
 
     if (!token) {
         alert("Please login first ❌");
-        window.location.href = "index.html";
+        window.location.href = "login.html";
         return;
     }
 
-    const res = await fetch(
-        `${BASE_URL}/api/tasks/project/${PROJECT_ID}/paged?page=0&size=50`,
-        {
-            headers: {
-                "Authorization": "Bearer " + token
-            }
+    const res = await fetch("/api/tasks/project/1", {
+        headers: {
+            "Authorization": "Bearer " + token
         }
-    );
+    });
+
+    if (!res.ok) {
+        alert("Session expired ❌");
+        localStorage.clear();
+        window.location.href = "login.html";
+        return;
+    }
 
     const data = await res.json();
-    const tasks = data.content;
-
-    let total = tasks.length;
-    let todo = 0, inprogress = 0, done = 0, overdue = 0;
 
     const list = document.getElementById("taskList");
     list.innerHTML = "";
 
-    const today = new Date();
-
-    tasks.forEach(task => {
-
-        if (task.status === "TODO") todo++;
-        if (task.status === "IN_PROGRESS") inprogress++;
-        if (task.status === "DONE") done++;
-
-        const created = new Date(task.createdAt);
-        const diff = (today - created) / (1000 * 60 * 60 * 24);
-
-        if (diff > 2 && task.status !== "DONE") overdue++;
-
-        // hide DONE tasks
-        if (task.status === "DONE") return;
-
+    data.forEach(t => {
         const div = document.createElement("div");
         div.className = "task";
-
-        div.innerHTML = `
-            <strong>${task.title}</strong><br>
-            Status: ${task.status}<br>
-            <button onclick="updateStatus(${task.id}, 'IN_PROGRESS')">Start</button>
-            <button onclick="updateStatus(${task.id}, 'DONE')">Done</button>
-        `;
-
+        div.innerText = t.title + " - " + t.status;
         list.appendChild(div);
     });
-
-    // stats
-    document.getElementById("total").innerText = total;
-    document.getElementById("todo").innerText = todo;
-    document.getElementById("inprogress").innerText = inprogress;
-    document.getElementById("done").innerText = done;
-    document.getElementById("overdue").innerText = overdue;
-}
-function showDashboard() {
-    document.getElementById("loginSection").style.display = "none";
-    document.getElementById("dashboardSection").style.display = "block";
 }
 
-function showLogin() {
-    document.getElementById("loginSection").style.display = "block";
-    document.getElementById("dashboardSection").style.display = "none";
-}
 // 🔐 LOGOUT (UPDATED)
 function logout() {
     localStorage.clear();
-    showLogin();   // 🔥 instead of redirect
+    window.location.href = "login.html"; // ✅ correct
 }
 
 // 🚀 AUTO LOAD (APP START)
