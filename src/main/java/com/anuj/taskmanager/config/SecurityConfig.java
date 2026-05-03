@@ -51,14 +51,11 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/",
                     "/index.html",
-                    "/login.html",
-                    "/register.html",
                     "/dashboard.html",
+                    "/register.html",
                     "/script.js",
-                    "/favicon.ico",
                     "/css/**",
-                    "/js/**",
-                    "/images/**"
+                    "/js/**"
                 ).permitAll()
 
                 // ✅ allow public APIs
@@ -66,7 +63,7 @@ public class SecurityConfig {
                     "/api/users/register",
                     "/api/users/login"
                 ).permitAll()
-
+                .requestMatchers(HttpMethod.PUT, "/api/tasks/**").authenticated()
                 // 🔒 protected APIs
                 .requestMatchers("/api/tasks/**").authenticated()
 
