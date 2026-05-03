@@ -60,11 +60,12 @@ public ResponseEntity<Page<TaskResponse>> getTasksDto(
 }
 
     // 🔥 Update Status
-    @PutMapping("/api/tasks/{id}/status")
-public Task updateStatus(
-        @PathVariable Long id,
-        @RequestParam String status) {
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Task> updateStatus(
+            @PathVariable Long id,
+            @RequestParam Status status) {
 
-    return taskService.updateStatus(id, status);
-}
+        Task updatedTask = taskService.updateStatus(id, status);
+        return ResponseEntity.ok(updatedTask);
+    }
 }
