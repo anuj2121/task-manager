@@ -79,6 +79,7 @@ async function login() {
         alert("Login success ✅");
 
         window.location.href = "dashboard.html";
+        showDashboard();
 
     } catch (error) {
         console.error(error);
@@ -280,3 +281,27 @@ async function loadTasks() {
     document.getElementById("done").innerText = done;
     document.getElementById("overdue").innerText = overdue;
 }
+function showDashboard() {
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("dashboardSection").style.display = "block";
+}
+
+function showLogin() {
+    document.getElementById("loginSection").style.display = "block";
+    document.getElementById("dashboardSection").style.display = "none";
+}
+// 🔐 LOGOUT (UPDATED)
+function logout() {
+    localStorage.clear();
+    showLogin();   // 🔥 instead of redirect
+}
+
+// 🚀 AUTO LOAD (APP START)
+window.onload = function () {
+    if (localStorage.getItem("token")) {
+        showDashboard();
+        loadTasks();
+    } else {
+        showLogin();
+    }
+};

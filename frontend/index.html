@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Task Manager</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -10,17 +10,11 @@
             margin: 0;
             font-family: Arial;
             height: 100vh;
-
-            background: 
-                linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-                url('bg1.jpg');
-
-            background-size: cover;
-            background-position: center;
-
             display: flex;
             justify-content: center;
             align-items: center;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('bg1.jpg');
+            background-size: cover;
         }
 
         .card {
@@ -30,10 +24,6 @@
             width: 300px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             text-align: center;
-        }
-
-        h2 {
-            margin-bottom: 20px;
         }
 
         input {
@@ -61,15 +51,29 @@
         a {
             display: block;
             margin-top: 10px;
-            text-decoration: none;
             color: #007bff;
+        }
+
+        /* DASHBOARD */
+        #dashboardSection {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .task {
+            background: #eef2ff;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
         }
     </style>
 </head>
 
 <body>
 
-<div class="card">
+<!-- 🔐 LOGIN -->
+<div id="loginSection" class="card">
     <h2>Login</h2>
 
     <input id="email" placeholder="Email">
@@ -80,14 +84,17 @@
     <a href="register.html">Create account</a>
 </div>
 
-<!-- 🔥 AUTO REDIRECT -->
-<script>
-if (localStorage.getItem("token")) {
-    window.location.href = "dashboard.html";
-}
-</script>
+<!-- 📊 DASHBOARD -->
+<div id="dashboardSection" class="card">
+    <h2>Dashboard</h2>
 
-<!-- 🔗 MAIN SCRIPT -->
+    <button onclick="logout()">Logout</button>
+    <button onclick="loadTasks()">Load Tasks</button>
+
+    <div id="taskList"></div>
+</div>
+
+<!-- 🔗 SCRIPT -->
 <script src="script.js"></script>
 
 </body>
