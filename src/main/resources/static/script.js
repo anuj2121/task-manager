@@ -59,7 +59,7 @@ async function login() {
         });
 
         if (!res.ok) {
-            alert("Login failed ❌");
+            showMessage("Login failed ❌", "error");
             return;
         }
 
@@ -71,13 +71,13 @@ async function login() {
         localStorage.setItem("role", payload.role);
         localStorage.setItem("email", payload.sub);
 
-        alert("Login success ✅");
+        showMessage("Login success ✅");
 
         window.location.href = "dashboard.html";
 
     } catch (error) {
         console.error(error);
-        alert("Login error ❌");
+        showMessage("Login error ❌", "error");
     }
 }
 
@@ -99,16 +99,16 @@ async function register() {
         });
 
         if (res.ok) {
-            alert("Registered successfully ✅");
+            showMessage("Registered successfully ✅");
             window.location.href = "index.html";
         } else {
             const text = await res.text();
-            alert("Error: " + text);
+            showMessage("Error: " + text, "error");
         }
 
     } catch (err) {
         console.error(err);
-        alert("Server error ❌");
+        showMessage("Server error ❌", "error");
     }
 }
 
@@ -132,7 +132,7 @@ async function createProject() {
     const data = await res.json();
 
     PROJECT_ID = data.id;
-    alert("Project created ✅ ID: " + PROJECT_ID);
+    showMessage("Project created ✅ ID: " + PROJECT_ID);
 }
 
 // 👥 ADD MEMBER
@@ -148,41 +148,34 @@ async function addMember() {
         }
     });
 
-    alert("Member added ✅");
+    showMessage("Member added ✅");
 }
 
 // 📌 CREATE TASK
 async function createTask() {
 
-    const token = getToken();
+    const token = localStorage.getItem("token");
 
     const title = document.getElementById("title").value;
     const description = document.getElementById("description").value;
     const userId = document.getElementById("assignUser").value;
 
-    if (!userId || isNaN(userId)) {
-        alert("Enter valid User ID ❌");
-        return;
-    }
-
-    const res = await fetch(
-        `/api/tasks?userId=${userId}&projectId=${PROJECT_ID}`,
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify({ title, description })
-        }
-    );
+    const res = await fetch(`/api/tasks?userId=${userId}&projectId=1`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ title, description })
+    });
 
     if (res.ok) {
-        alert("Task created ✅");
-        loadTasks();
+        showMessage("Task created ✅");
+
+        // 🔥 IMPORTANT FIX
+        loadTasks();   // ← this refreshes dashboard
     } else {
-        const text = await res.text();
-        alert("Error: " + text);
+        showMessage("Error creating task ❌", "error");
     }
 }
 
@@ -204,24 +197,16 @@ async function updateStatus(taskId, status) {
 // 📊 LOAD TASKS
 async function loadTasks() {
 
-    const token = getToken();
+    const token = localStorage.getItem("token");
 
-    if (!token) {
-        alert("Please login first ❌");
-        window.location.href = "index.html";
-        return;
-    }
-
-    const res = await fetch(`/api/tasks/project/${PROJECT_ID}`, {
+    const res = await fetch(`/api/tasks/project/1`, {
         headers: {
             "Authorization": "Bearer " + token
         }
     });
 
     if (!res.ok) {
-        alert("Session expired ❌");
-        localStorage.clear();
-        window.location.href = "index.html";
+        alert("Unauthorized ❌");
         return;
     }
 
@@ -230,12 +215,32 @@ async function loadTasks() {
     const list = document.getElementById("taskList");
     list.innerHTML = "";
 
+    // ✅ COUNTERS
+    let total = data.length;
+    let todo = 0, inprogress = 0, done = 0, overdue = 0;
+
     data.forEach(t => {
+
+        // Count status
+        if (t.status === "TODO") todo++;
+        else if (t.status === "IN_PROGRESS") inprogress++;
+        else if (t.status === "DONE") done++;
+
+        if (t.overdue === true) overdue++;
+
+        // UI
         const div = document.createElement("div");
         div.className = "task";
         div.innerText = t.title + " - " + t.status;
         list.appendChild(div);
     });
+
+    // ✅ UPDATE UI
+    document.getElementById("total").innerText = total;
+    document.getElementById("todo").innerText = todo;
+    document.getElementById("inprogress").innerText = inprogress;
+    document.getElementById("done").innerText = done;
+    document.getElementById("overdue").innerText = overdue;
 }
 function showMessage(text, type = "success") {
     const box = document.getElementById("messageBox");
