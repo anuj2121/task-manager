@@ -35,7 +35,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
 
-            // 🔥 ENABLE CORS
+            // ✅ ENABLE CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
             .sessionManagement(session -> session
@@ -44,30 +44,33 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                // 🔥 allow preflight requests (important for frontend)
+                // ✅ allow preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // 🔥 allow root & static (fixes 403 on "/")
+                // ✅ allow ALL static frontend files (VERY IMPORTANT)
                 .requestMatchers(
                     "/",
                     "/index.html",
-                    "/error",
+                    "/login.html",
+                    "/register.html",
+                    "/dashboard.html",
+                    "/script.js",
                     "/favicon.ico",
                     "/css/**",
-                    "/js/**"
+                    "/js/**",
+                    "/images/**"
                 ).permitAll()
 
-                // 🔥 public APIs
+                // ✅ allow public APIs
                 .requestMatchers(
                     "/api/users/register",
-                    "/api/users/login",
-                    "/api/users/test"
+                    "/api/users/login"
                 ).permitAll()
 
                 // 🔒 protected APIs
                 .requestMatchers("/api/tasks/**").authenticated()
 
-                // 🔒 everything else (keep secure)
+                // 🔒 everything else
                 .anyRequest().authenticated()
             )
 
@@ -79,14 +82,14 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 🔥 CORS CONFIG
+    // ✅ CORS CONFIG
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of("*")); // use specific origin in production
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
