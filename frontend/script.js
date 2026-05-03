@@ -3,24 +3,30 @@ console.log("JS LOADED");
 
 let PROJECT_ID = 1;
 
-// 🔐 TOKEN
+// 🔐 GET TOKEN
 function getToken() {
     return localStorage.getItem("token");
 }
 
 // 🔐 LOGOUT
 function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    window.location.href = "login.html";
+    localStorage.clear();
+    window.location.href = "index.html";
 }
 
-// 🚀 INIT (ROLE BASED)
+// 🚀 INIT (LOAD DASHBOARD)
 function init() {
 
     const role = localStorage.getItem("role");
+    const email = localStorage.getItem("email");
 
-    // 🔥 hide admin section for MEMBER
+    // 🔥 Show user info
+    const userInfo = document.getElementById("userInfo");
+    if (userInfo) {
+        userInfo.innerText = `${email} (${role})`;
+    }
+
+    // 🔥 Role-based UI
     if (role !== "ADMIN") {
         const adminSection = document.getElementById("adminSection");
         if (adminSection) {
@@ -31,7 +37,7 @@ function init() {
     loadTasks();
 }
 
-// 🔐 LOGIN (FIXED)
+// 🔐 LOGIN
 async function login() {
     console.log("LOGIN CLICKED");
 
@@ -42,43 +48,76 @@ async function login() {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                email: "anuj@gmail.com",
-                password: "123456"
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
             })
         });
 
         if (!res.ok) {
-            throw new Error("Login failed: " + res.status);
+            alert("Login failed ❌");
+            return;
         }
 
-        // ✅ IMPORTANT: use json()
-        const data = await res.json();
+        let token;
+        const text = await res.text();
 
-        const token = data.token;
+        try {
+            const data = JSON.parse(text);
+            token = data.token;
+        } catch {
+            token = text;
+        }
+
         console.log("TOKEN:", token);
 
-        // 🔥 Decode JWT safely
         const payload = JSON.parse(atob(token.split('.')[1]));
 
-        const role = payload.role;
-        const userEmail = payload.sub;
-
-        // 🔥 Save
         localStorage.setItem("token", token);
-        localStorage.setItem("role", role);
-        localStorage.setItem("email", userEmail);
+        localStorage.setItem("role", payload.role);
+        localStorage.setItem("email", payload.sub);
 
         alert("Login success ✅");
 
         window.location.href = "dashboard.html";
 
     } catch (error) {
-        console.error("LOGIN ERROR:", error);
-        alert("Login failed ❌");
+        console.error(error);
+        alert("Login error ❌");
     }
 }
 
-// 📁 CREATE PROJECT
+// 📝 REGISTER
+async function register() {
+
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const role = document.getElementById("role").value;
+
+    try {
+        const res = await fetch(`${BASE_URL}/api/users/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name, email, password, role })
+        });
+
+        if (res.ok) {
+            alert("Registered successfully ✅");
+            window.location.href = "index.html";
+        } else {
+            const text = await res.text();
+            alert("Error: " + text);
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Server error ❌");
+    }
+}
+
+// 📁 CREATE PROJECT (ADMIN)
 async function createProject() {
     const token = getToken();
 
@@ -100,7 +139,7 @@ async function createProject() {
     alert("Project created ✅ ID: " + PROJECT_ID);
 }
 
-// 👥 ADD MEMBER
+// 👥 ADD MEMBER (ADMIN)
 async function addMember() {
     const token = getToken();
     const userId = document.getElementById("memberId").value;
@@ -176,67 +215,16 @@ async function updateStatus(taskId, status) {
     loadTasks();
 }
 
-// 📝 REGISTER
-async function register() {
-
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const role = document.getElementById("role").value;
-
-    try {
-        const res = await fetch(`${BASE_URL}/api/users/register`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ name, email, password, role })
-        });
-
-        if (res.ok) {
-            alert("Registered successfully ✅");
-            window.location.href = "login.html";
-        } else {
-            const text = await res.text();
-            alert("Error: " + text);
-        }
-
-    } catch (err) {
-        console.error(err);
-        alert("Server error ❌");
-    }
-}
-async function getTasks() {
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        alert("Please login first ❌");
-        return;
-    }
-
-    const res = await fetch(BASE_URL + "/api/tasks/project/1", {
-        headers: {
-            "Authorization": "Bearer " + token
-        }
-    });
-
-    const data = await res.json();
-    console.log("TASKS:", data);
-
-    const list = document.getElementById("taskList");
-    list.innerHTML = "";
-
-    data.forEach(t => {
-        const li = document.createElement("li");
-        li.innerText = t.title + " - " + t.status;
-        list.appendChild(li);
-    });
-}
-// 📊 LOAD TASKS
+// 📊 LOAD TASKS (MAIN FUNCTION)
 async function loadTasks() {
 
     const token = getToken();
+
+    if (!token) {
+        alert("Please login first ❌");
+        window.location.href = "index.html";
+        return;
+    }
 
     const res = await fetch(
         `${BASE_URL}/api/tasks/project/${PROJECT_ID}/paged?page=0&size=50`,
@@ -269,7 +257,7 @@ async function loadTasks() {
 
         if (diff > 2 && task.status !== "DONE") overdue++;
 
-        // 🔥 HIDE DONE TASKS
+        // hide DONE tasks
         if (task.status === "DONE") return;
 
         const div = document.createElement("div");
@@ -285,30 +273,10 @@ async function loadTasks() {
         list.appendChild(div);
     });
 
+    // stats
     document.getElementById("total").innerText = total;
     document.getElementById("todo").innerText = todo;
     document.getElementById("inprogress").innerText = inprogress;
     document.getElementById("done").innerText = done;
     document.getElementById("overdue").innerText = overdue;
-}
-function init() {
-
-    const role = localStorage.getItem("role");
-    const email = localStorage.getItem("email");
-
-    // 🔥 Show user info
-    const userInfo = document.getElementById("userInfo");
-    if (userInfo) {
-        userInfo.innerText = `${email} (${role})`;
-    }
-
-    // 🔥 Role-based UI
-    if (role !== "ADMIN") {
-        const adminSection = document.getElementById("adminSection");
-        if (adminSection) {
-            adminSection.style.display = "none";
-        }
-    }
-
-    loadTasks();
 }

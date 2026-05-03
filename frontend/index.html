@@ -1,62 +1,94 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Task Manager</title>
+    <title>Login</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            height: 100vh;
+
+            background: 
+                linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                url('bg1.jpg');
+
+            background-size: cover;
+            background-position: center;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 300px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #00c6ff;
+        }
+
+        a {
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #007bff;
+        }
+    </style>
 </head>
+
 <body>
 
-<h1> Task Manager</h1>
+<div class="card">
+    <h2>Login</h2>
 
-<button onclick="getTasks()">Get Tasks</button>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
 
-<ul id="taskList"></ul>
+    <button onclick="login()">Login</button>
 
+    <a href="register.html">Create account</a>
+</div>
+
+<!-- 🔥 AUTO REDIRECT -->
 <script>
-const API = "https://task-manager-production-cd74.up.railway.app";
-let token = "";
-
-async function login() {
-  const res = await fetch(API + "/api/users/login", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      email: "yadavk.anuj51@gmail.com",
-      password: "123456"
-    })
-  });
-
-  token = await res.text();   // ✅ FIXED
-  console.log("Token:", token);
-}
-
-async function getTasks() {
-  if (!token) await login();
-
-  const res = await fetch(API + "/api/tasks/project/1", {
-    headers: {
-      "Authorization": "Bearer " + token
-    }
-  });
-
-  if (!res.ok) {
-    console.log("ERROR:", res.status);
-    alert("Error: " + res.status);
-    return;
-  }
-
-  const data = await res.json();
-  console.log("TASKS:", data);
-
-  const list = document.getElementById("taskList");
-  list.innerHTML = "";
-
-  data.forEach(t => {
-    const li = document.createElement("li");
-    li.innerText = t.title + " - " + t.status;
-    list.appendChild(li);
-  });
+if (localStorage.getItem("token")) {
+    window.location.href = "dashboard.html";
 }
 </script>
+
+<!-- 🔗 MAIN SCRIPT -->
+<script src="script.js"></script>
 
 </body>
 </html>

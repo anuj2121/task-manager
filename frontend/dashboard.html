@@ -7,16 +7,14 @@
 
     <style>
         body {
-    margin: 0;
-    font-family: Arial;
-
-    background: 
-        linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
-        url('bg3.jpg');
-
-    background-size: cover;
-    background-attachment: fixed;
-}
+            margin: 0;
+            font-family: Arial;
+            background: 
+                linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
+                url('bg3.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+        }
 
         /* 🔝 NAVBAR */
         .navbar {
@@ -32,7 +30,7 @@
             margin: 0;
         }
 
-        .nav-actions button {
+        .nav-right button {
             margin-left: 10px;
         }
 
@@ -78,6 +76,8 @@
             width: 100%;
             padding: 10px;
             margin: 6px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
         }
 
         button {
@@ -135,7 +135,7 @@
 <div class="navbar">
     <h2>Task Manager</h2>
 
-     <div class="nav-right">
+    <div class="nav-right">
         <span id="userInfo"></span>
         <button onclick="toggleDarkMode()">🌙</button>
         <button onclick="logout()">Logout</button>
@@ -152,29 +152,34 @@
     <div class="card-stat done">Done<br><span id="done">0</span></div>
     <div class="card-stat overdue">Overdue<br><span id="overdue">0</span></div>
 </div>
-<div id="adminSection">
-<!-- 📁 PROJECT -->
-<div class="card">
-    <h3>Create Project</h3>
-    <input id="projectName" placeholder="Project Name">
-    <input id="projectDesc" placeholder="Description">
-    <button onclick="createProject()">Create</button>
-</div>
 
-<!-- 👥 TEAM -->
-<div class="card">
-    <h3>Add Member</h3>
-    <input id="memberId" placeholder="User ID">
-    <button onclick="addMember()">Add Member</button>
-</div>
-<!-- 📌 TASK -->
-<div class="card">
-    <h3>Create Task</h3>
-    <input id="title" placeholder="Title">
-    <input id="description" placeholder="Description">
-    <input id="assignUser" placeholder="Assign User ID">
-    <button onclick="createTask()">Create Task</button>
-</div>
+<!-- 🔥 ADMIN SECTION -->
+<div id="adminSection">
+
+    <!-- 📁 PROJECT -->
+    <div class="card">
+        <h3>Create Project</h3>
+        <input id="projectName" placeholder="Project Name">
+        <input id="projectDesc" placeholder="Description">
+        <button onclick="createProject()">Create</button>
+    </div>
+
+    <!-- 👥 TEAM -->
+    <div class="card">
+        <h3>Add Member</h3>
+        <input id="memberId" placeholder="User ID">
+        <button onclick="addMember()">Add Member</button>
+    </div>
+
+    <!-- 📌 TASK -->
+    <div class="card">
+        <h3>Create Task</h3>
+        <input id="title" placeholder="Title">
+        <input id="description" placeholder="Description">
+        <input id="assignUser" placeholder="Assign User ID">
+        <button onclick="createTask()">Create Task</button>
+    </div>
+
 </div>
 
 <!-- 📋 TASK LIST -->
@@ -186,8 +191,10 @@
 
 </div>
 
+<!-- 🔗 MAIN SCRIPT -->
 <script src="script.js"></script>
 
+<!-- 🌙 DARK MODE -->
 <script>
 function toggleDarkMode() {
     document.body.classList.toggle("dark");

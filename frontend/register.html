@@ -3,23 +3,25 @@
 <head>
     <title>Register</title>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
         body {
-    margin: 0;
-    font-family: Arial;
-    height: 100vh;
+            margin: 0;
+            font-family: Arial;
+            height: 100vh;
 
-    background: 
-        linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-        url('bg2.jpg');
+            background: 
+                linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                url('bg2.jpg');
 
-    background-size: cover;
-    background-position: center;
+            background-size: cover;
+            background-position: center;
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
         .card {
             background: white;
@@ -34,18 +36,12 @@
             margin-bottom: 20px;
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 10px;
             margin: 8px 0;
             border-radius: 6px;
             border: 1px solid #ccc;
-        }
-
-        select {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
         }
 
         button {
@@ -87,9 +83,18 @@
 
     <button onclick="register()">Register</button>
 
-    <a href="login.html">Back to login</a>
+    <!-- 🔥 FIXED LINK -->
+    <a href="index.html">Back to login</a>
 </div>
 
+<!-- 🔥 AUTO REDIRECT IF LOGGED IN -->
+<script>
+if (localStorage.getItem("token")) {
+    window.location.href = "dashboard.html";
+}
+</script>
+
+<!-- 🔗 MAIN SCRIPT -->
 <script src="script.js"></script>
 
 </body>
