@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<h1>🚀 Task Manager</h1>
+<h1> Task Manager</h1>
 
 <button onclick="getTasks()">Get Tasks</button>
 
@@ -15,7 +15,6 @@
 const API = "https://task-manager-production-cd74.up.railway.app";
 let token = "";
 
-// 🔥 LOGIN FIRST (hardcode for now)
 async function login() {
   const res = await fetch(API + "/api/users/login", {
     method: "POST",
@@ -26,12 +25,10 @@ async function login() {
     })
   });
 
-  const data = await res.json();
-  token = data.token;
+  token = await res.text();   // ✅ FIXED
   console.log("Token:", token);
 }
 
-// 🔥 GET TASKS
 async function getTasks() {
   if (!token) await login();
 
@@ -41,7 +38,14 @@ async function getTasks() {
     }
   });
 
+  if (!res.ok) {
+    console.log("ERROR:", res.status);
+    alert("Error: " + res.status);
+    return;
+  }
+
   const data = await res.json();
+  console.log("TASKS:", data);
 
   const list = document.getElementById("taskList");
   list.innerHTML = "";
