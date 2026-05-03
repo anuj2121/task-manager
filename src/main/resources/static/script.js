@@ -1,4 +1,5 @@
-const BASE_URL = "https://task-manager-production-cd74.up.railway.app";
+// ✅ SAME SERVER (Railway)
+const BASE_URL = "";
 console.log("JS LOADED");
 
 let PROJECT_ID = 1;
@@ -14,19 +15,25 @@ function logout() {
     window.location.href = "index.html";
 }
 
-// 🚀 INIT (LOAD DASHBOARD)
+// 🚀 INIT (DASHBOARD LOAD)
 function init() {
+    const token = getToken();
+
+    if (!token) {
+        window.location.href = "index.html";
+        return;
+    }
 
     const role = localStorage.getItem("role");
     const email = localStorage.getItem("email");
 
-    // 🔥 Show user info
+    // Show user info
     const userInfo = document.getElementById("userInfo");
     if (userInfo) {
         userInfo.innerText = `${email} (${role})`;
     }
 
-    // 🔥 Role-based UI
+    // Hide admin section for MEMBER
     if (role !== "ADMIN") {
         const adminSection = document.getElementById("adminSection");
         if (adminSection) {
@@ -39,10 +46,8 @@ function init() {
 
 // 🔐 LOGIN
 async function login() {
-    console.log("LOGIN CLICKED");
-
     try {
-        const res = await fetch(BASE_URL + "/api/users/login", {
+        const res = await fetch("/api/users/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -58,17 +63,7 @@ async function login() {
             return;
         }
 
-        let token;
-        const text = await res.text();
-
-        try {
-            const data = JSON.parse(text);
-            token = data.token;
-        } catch {
-            token = text;
-        }
-
-        console.log("TOKEN:", token);
+        const token = await res.text(); // backend returns plain token
 
         const payload = JSON.parse(atob(token.split('.')[1]));
 
@@ -79,7 +74,6 @@ async function login() {
         alert("Login success ✅");
 
         window.location.href = "dashboard.html";
-        showDashboard();
 
     } catch (error) {
         console.error(error);
@@ -96,7 +90,7 @@ async function register() {
     const role = document.getElementById("role").value;
 
     try {
-        const res = await fetch(`${BASE_URL}/api/users/register`, {
+        const res = await fetch("/api/users/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -118,14 +112,15 @@ async function register() {
     }
 }
 
-// 📁 CREATE PROJECT (ADMIN)
+// 📁 CREATE PROJECT
 async function createProject() {
+
     const token = getToken();
 
     const name = document.getElementById("projectName").value;
     const description = document.getElementById("projectDesc").value;
 
-    const res = await fetch(`${BASE_URL}/api/projects?userId=1`, {
+    const res = await fetch(`/api/projects?userId=1`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -140,12 +135,13 @@ async function createProject() {
     alert("Project created ✅ ID: " + PROJECT_ID);
 }
 
-// 👥 ADD MEMBER (ADMIN)
+// 👥 ADD MEMBER
 async function addMember() {
+
     const token = getToken();
     const userId = document.getElementById("memberId").value;
 
-    await fetch(`${BASE_URL}/api/projects/${PROJECT_ID}/members?userId=${userId}`, {
+    await fetch(`/api/projects/${PROJECT_ID}/members?userId=${userId}`, {
         method: "POST",
         headers: {
             "Authorization": "Bearer " + token
@@ -169,35 +165,24 @@ async function createTask() {
         return;
     }
 
-    try {
-        const res = await fetch(
-            `${BASE_URL}/api/tasks?userId=${userId}&projectId=${PROJECT_ID}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-                body: JSON.stringify({ title, description })
-            }
-        );
-
-        if (res.ok) {
-            alert("Task created ✅");
-
-            document.getElementById("title").value = "";
-            document.getElementById("description").value = "";
-            document.getElementById("assignUser").value = "";
-
-            loadTasks();
-        } else {
-            const text = await res.text();
-            alert("Error: " + text);
+    const res = await fetch(
+        `/api/tasks?userId=${userId}&projectId=${PROJECT_ID}`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({ title, description })
         }
+    );
 
-    } catch (err) {
-        console.error(err);
-        alert("Network error ❌");
+    if (res.ok) {
+        alert("Task created ✅");
+        loadTasks();
+    } else {
+        const text = await res.text();
+        alert("Error: " + text);
     }
 }
 
@@ -206,7 +191,7 @@ async function updateStatus(taskId, status) {
 
     const token = getToken();
 
-    await fetch(`${BASE_URL}/api/tasks/${taskId}?status=${status}`, {
+    await fetch(`/api/tasks/${taskId}?status=${status}`, {
         method: "PUT",
         headers: {
             "Authorization": "Bearer " + token
@@ -216,82 +201,18 @@ async function updateStatus(taskId, status) {
     loadTasks();
 }
 
-// 📊 LOAD TASKS (MAIN FUNCTION)
-// async function loadTasks() {
-
-//     const token = getToken();
-
-//     if (!token) {
-//         alert("Please login first ❌");
-//         window.location.href = "index.html";
-//         return;
-//     }
-
-//     const res = await fetch(
-//         `${BASE_URL}/api/tasks/project/${PROJECT_ID}/paged?page=0&size=50`,
-//         {
-//             headers: {
-//                 "Authorization": "Bearer " + token
-//             }
-//         }
-//     );
-
-//     const data = await res.json();
-//     const tasks = data.content;
-
-//     let total = tasks.length;
-//     let todo = 0, inprogress = 0, done = 0, overdue = 0;
-
-//     const list = document.getElementById("taskList");
-//     list.innerHTML = "";
-
-//     const today = new Date();
-
-//     tasks.forEach(task => {
-
-//         if (task.status === "TODO") todo++;
-//         if (task.status === "IN_PROGRESS") inprogress++;
-//         if (task.status === "DONE") done++;
-
-//         const created = new Date(task.createdAt);
-//         const diff = (today - created) / (1000 * 60 * 60 * 24);
-
-//         if (diff > 2 && task.status !== "DONE") overdue++;
-
-//         // hide DONE tasks
-//         if (task.status === "DONE") return;
-
-//         const div = document.createElement("div");
-//         div.className = "task";
-
-//         div.innerHTML = `
-//             <strong>${task.title}</strong><br>
-//             Status: ${task.status}<br>
-//             <button onclick="updateStatus(${task.id}, 'IN_PROGRESS')">Start</button>
-//             <button onclick="updateStatus(${task.id}, 'DONE')">Done</button>
-//         `;
-
-//         list.appendChild(div);
-//     });
-
-//     // stats
-//     document.getElementById("total").innerText = total;
-//     document.getElementById("todo").innerText = todo;
-//     document.getElementById("inprogress").innerText = inprogress;
-//     document.getElementById("done").innerText = done;
-//     document.getElementById("overdue").innerText = overdue;
-// }
+// 📊 LOAD TASKS
 async function loadTasks() {
 
-    const token = localStorage.getItem("token");
+    const token = getToken();
 
     if (!token) {
         alert("Please login first ❌");
-        window.location.href = "login.html";
+        window.location.href = "index.html";
         return;
     }
 
-    const res = await fetch("/api/tasks/project/1", {
+    const res = await fetch(`/api/tasks/project/${PROJECT_ID}`, {
         headers: {
             "Authorization": "Bearer " + token
         }
@@ -300,7 +221,7 @@ async function loadTasks() {
     if (!res.ok) {
         alert("Session expired ❌");
         localStorage.clear();
-        window.location.href = "login.html";
+        window.location.href = "index.html";
         return;
     }
 
@@ -316,19 +237,3 @@ async function loadTasks() {
         list.appendChild(div);
     });
 }
-
-// 🔐 LOGOUT (UPDATED)
-function logout() {
-    localStorage.clear();
-    window.location.href = "login.html"; // ✅ correct
-}
-
-// 🚀 AUTO LOAD (APP START)
-window.onload = function () {
-    if (localStorage.getItem("token")) {
-        showDashboard();
-        loadTasks();
-    } else {
-        showLogin();
-    }
-};
