@@ -237,3 +237,21 @@ async function loadTasks() {
         list.appendChild(div);
     });
 }
+function showMessage(text, type = "success") {
+    const box = document.getElementById("messageBox");
+
+    if (!box) return;
+
+    box.innerText = text;
+    box.style.display = "block";
+
+    if (type === "error") {
+        box.style.background = "#ef4444";
+    } else {
+        box.style.background = "#4caf50";
+    }
+
+    setTimeout(() => {
+        box.style.display = "none";
+    }, 2000);
+}
