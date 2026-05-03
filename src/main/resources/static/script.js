@@ -63,8 +63,7 @@ async function login() {
             return;
         }
 
-        const token = await res.text(); // backend returns plain token
-
+        const token = await res.text();
         const payload = JSON.parse(atob(token.split('.')[1]));
 
         localStorage.setItem("token", token);
@@ -72,7 +71,6 @@ async function login() {
         localStorage.setItem("email", payload.sub);
 
         showMessage("Login success ✅");
-
         window.location.href = "dashboard.html";
 
     } catch (error) {
@@ -154,13 +152,13 @@ async function addMember() {
 // 📌 CREATE TASK
 async function createTask() {
 
-    const token = localStorage.getItem("token");
+    const token = getToken();
 
     const title = document.getElementById("title").value;
     const description = document.getElementById("description").value;
     const userId = document.getElementById("assignUser").value;
 
-    const res = await fetch(`/api/tasks?userId=${userId}&projectId=1`, {
+    const res = await fetch(`/api/tasks?userId=${userId}&projectId=${PROJECT_ID}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -172,8 +170,12 @@ async function createTask() {
     if (res.ok) {
         showMessage("Task created ✅");
 
-        // 🔥 IMPORTANT FIX
-        loadTasks();   // ← this refreshes dashboard
+        // clear inputs
+        document.getElementById("title").value = "";
+        document.getElementById("description").value = "";
+        document.getElementById("assignUser").value = "";
+
+        loadTasks();
     } else {
         showMessage("Error creating task ❌", "error");
     }
@@ -184,29 +186,34 @@ async function updateStatus(taskId, status) {
 
     const token = getToken();
 
-    await fetch(`/api/tasks/${taskId}?status=${status}`, {
+    const res = await fetch(`/api/tasks/${taskId}/status?status=${status}`, {
         method: "PUT",
         headers: {
             "Authorization": "Bearer " + token
         }
     });
 
-    loadTasks();
+    if (res.ok) {
+        showMessage("Task updated ✅");
+        loadTasks();
+    } else {
+        showMessage("Update failed ❌", "error");
+    }
 }
 
 // 📊 LOAD TASKS
 async function loadTasks() {
 
-    const token = localStorage.getItem("token");
+    const token = getToken();
 
-    const res = await fetch(`/api/tasks/project/1`, {
+    const res = await fetch(`/api/tasks/project/${PROJECT_ID}`, {
         headers: {
             "Authorization": "Bearer " + token
         }
     });
 
     if (!res.ok) {
-        alert("Unauthorized ❌");
+        showMessage("Unauthorized ❌", "error");
         return;
     }
 
@@ -215,46 +222,58 @@ async function loadTasks() {
     const list = document.getElementById("taskList");
     list.innerHTML = "";
 
-    // ✅ COUNTERS
+    // 📊 COUNTERS
     let total = data.length;
     let todo = 0, inprogress = 0, done = 0, overdue = 0;
 
     data.forEach(t => {
 
-        // Count status
         if (t.status === "TODO") todo++;
         else if (t.status === "IN_PROGRESS") inprogress++;
         else if (t.status === "DONE") done++;
+        else if (t.status === "OVERDUE") overdue++;
 
-        if (t.overdue === true) overdue++;
-
-        // UI
         const div = document.createElement("div");
         div.className = "task";
-        div.innerText = t.title + " - " + t.status;
+
+        const role = localStorage.getItem("role");
+
+        if (role === "ADMIN") {
+            div.innerHTML = `
+                <b>${t.title}</b><br>
+                Status: ${t.status}<br>
+
+                <button onclick="updateStatus(${t.id}, 'IN_PROGRESS')">Start</button>
+                <button onclick="updateStatus(${t.id}, 'DONE')">Done</button>
+                <button onclick="updateStatus(${t.id}, 'OVERDUE')">Overdue</button>
+            `;
+        } else {
+            div.innerHTML = `
+                <b>${t.title}</b><br>
+                Status: ${t.status}
+            `;
+        }
+
         list.appendChild(div);
     });
 
-    // ✅ UPDATE UI
+    // 📊 UPDATE STATS
     document.getElementById("total").innerText = total;
     document.getElementById("todo").innerText = todo;
     document.getElementById("inprogress").innerText = inprogress;
     document.getElementById("done").innerText = done;
     document.getElementById("overdue").innerText = overdue;
 }
+
+// 🔔 MESSAGE BOX
 function showMessage(text, type = "success") {
     const box = document.getElementById("messageBox");
-
     if (!box) return;
 
     box.innerText = text;
     box.style.display = "block";
 
-    if (type === "error") {
-        box.style.background = "#ef4444";
-    } else {
-        box.style.background = "#4caf50";
-    }
+    box.style.background = type === "error" ? "#ef4444" : "#4caf50";
 
     setTimeout(() => {
         box.style.display = "none";
